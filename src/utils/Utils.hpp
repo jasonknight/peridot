@@ -43,6 +43,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <assert.h>
+#include "Types.hpp"
 namespace Peridot {
   namespace Utils {
     namespace ASCII {
@@ -116,6 +117,9 @@ namespace Peridot {
         ss << i;
         dest.assign(ss.str());
     }
+    inline int StringToInt(std::string& s) {
+        return atoi(s.c_str());
+    }
     
     void ExceptionToMessage(int ex, std::string & msg) {
         switch(ex) {
@@ -131,15 +135,93 @@ namespace Peridot {
     void Puts(std::string & s) {
         std::cout << s << std::endl;
     }
-    void Nil(void * p) {
+    void Puts(const char * s) {
+        std::cout << s << std::endl;
+    }
+    void Nil(void * p, const char * s) {
         if (p == NULL) {
             // We can't seem to throw errors...weird..
             std::string e;
             ExceptionToMessage(666,e);
+            e += " ";
+            e += s;
             Puts(e);
             assert(false);
         }
     }
+    template<typename T>
+    struct IsPointer { static const bool yes = false; };
+
+    template<typename T>
+    struct IsPointer<T*> { static const bool yes = true; };
+    /**
+     * Simply inserts an ALLCAPS name representation of the TokenType into the PeridotString passed in.
+     * DO NOT MANUALLY EDIT THIS METHOD.  Edit the partial that will be included.
+     * #ruby create_token_type_to_name.rb
+     * */
+     void TokenTypeToName(Peridot::TokenType t,PeridotString& name) {
+            switch(t) {
+                /* TOKENTYPE CASES */
+                // provided by a partial
+                #include "_token_type_to_name.hpp"	
+                /* END */
+#ifndef PERIDOT_WSTRING
+                default:
+                    name = "UNKOWNUNKNOWN";
+                    break;
+#else       
+                default:
+                    name = L"UNKOWNUNKNOWN";
+                    break;
+#endif
+            }
+     }
+     /**
+     * We need to be able to sensibly initialize the data structure to avoid forgetting stuff
+     * */
+    void InitializeToken(Peridot::Token * t) {
+        Utils::Nil(t,"InitializeToken");
+        t->start = '\0';
+        t->end = '\0';
+        t->terminated_by = '\0';
+        t->start_column = 0;
+        t->line_number = 0;
+        t->type = UNKNOWN;
+        t->text = "";
+    }
+    /**
+     * It is important to be able to save the results of a lexing to an easier to parse version of the same
+     * file.
+     *
+     */
+    template <class F> 
+    void WriteToken(F& stream,Peridot::Token * result) {
+        Utils::Nil(result, "WriteToken");
+        std::string h = "Token";
+        stream.write(h.data(),h.size());
+        stream << result->start;
+        stream << result->end;
+        stream << result->terminated_by;
+
+        std::string start_column;
+        Utils::IntToString(result->start_column, start_column);
+        stream.write(start_column.data(),start_column.size()) << 'S';
+        
+        std::string line_number;
+        Utils::IntToString(result->line_number,line_number);
+        stream.write(line_number.data(),line_number.size()) << 'L';
+        
+        std::string token_type;
+        Utils::IntToString(result->type,token_type);
+        stream.write(token_type.data(),token_type.size()) << 'T';
+        
+        std::string length;
+        Utils::IntToString(result->text.size(),length);
+        stream.write(length.data(),length.size()) << 'Z';
+        stream.write(result->text.data(),result->text.size());
+    }
+
+
   } // End Namespace Utils
 }// End Namespace Peridot
 #endif

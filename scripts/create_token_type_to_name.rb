@@ -1,4 +1,4 @@
-text = File.open('Lexer.hpp','r')
+text = File.open('../src/utils/Types.hpp','r')
 ntext = '';
 cases = '';
 context = 'file'
@@ -21,11 +21,10 @@ text.each_line do |line|
 #else
 #{pre}case TokenType::#{matches[0][0]}:\n#{pre}\tname = L\"#{matches[0][0]}\";\n#{pre}\tbreak;\n
 #endif
-
     ]
   end
 end
 text.close
-text = File.open('_token_type_to_name.hpp','w+') do |f|
+text = File.open('../src/utils/_token_type_to_name.hpp','w+') do |f|
   f.write cases
 end

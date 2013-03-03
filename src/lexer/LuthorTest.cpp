@@ -12,9 +12,9 @@
 namespace Lexer = Peridot::Lexer;
 namespace Utils = Peridot::Utils;
 
-void PrintTokenInfo(Lexer::Token * result) {
+void PrintTokenInfo(Peridot::Token * result) {
     PeridotString name;
-    Lexer::TokenTypeToName(result->type,name);
+    Utils::TokenTypeToName(result->type,name);
     std::cout << "Token: [" << result->text << "] of type [" << name << "] ";
     std::cout << " lineno [" << result->line_number << "] ";
     std::cout << "Terminated By: [" << result->terminated_by << "]" << std::endl; 
@@ -30,13 +30,13 @@ int main(void) {
 
     lex->AddDictionary(&num);
     
-    auto result = new Lexer::Token;
-    Lexer::InitializeToken(result); // Always call this
+    auto result = new Peridot::Token;
+    Utils::InitializeToken(result); // Always call this
     std::ofstream outfile("tests/tokens.txt", std::ios::out);
     while(lex->Next(result)) {
         PrintTokenInfo(result);
-        WriteToken(outfile,result); 
-        InitializeToken(result);
+        Utils::WriteToken(outfile,result); 
+        Utils::InitializeToken(result);
     }
     outfile.close();
     delete lex;
@@ -50,8 +50,8 @@ int main(void) {
     tfile.open("tests/tokens.txt");
 
     auto * lex2 = new Lexer::Luthor<std::ifstream>(tfile,true);
-    auto r = new Lexer::Token; 
-    InitializeToken(r);
+    auto r = new Peridot::Token; 
+    Utils::InitializeToken(r);
 
             
     Lexer::TokenMonsterDictionary<std::ifstream> t;
@@ -65,14 +65,14 @@ int main(void) {
 
     
 
-    t.validator = [] (std::ifstream & __s, Lexer::Token * __res) -> bool {
+    t.validator = [] (std::ifstream & __s, Peridot::Token * __res) -> bool {
         if (__res->text == "Token") {
-          auto tmp = new Lexer::Token; 
+          auto tmp = new Peridot::Token; 
           Lexer::TokenMonsterDictionary<std::ifstream> n;
           n.name = "SubName";
           n.alphabet = "0123456789";
           n.tigger = true;
-          n.type = Lexer::NUMERICAL;
+          n.type = Peridot::NUMERICAL;
           n.escape_character = Utils::ASCII::BACKSLASH;
           n.terminator = '\0';
           int value = 0;
@@ -100,7 +100,7 @@ int main(void) {
             std::cout << "Failed to accquire type" << std::endl;
             return false;
           }
-          __res->type = (Lexer::TokenType)value;
+          __res->type = (Peridot::TokenType)value;
           __s.get();
           if (!TokenMonster(n,__s,tmp)) {
             std::cout << "Failed to num chars" << std::endl;
@@ -120,7 +120,7 @@ int main(void) {
     std::cout << "Starting loop to read in serialized tokens" << std::endl;
     while(lex2->Next(r)) {
         PrintTokenInfo(r);
-        InitializeToken(r);
+        Utils::InitializeToken(r);
     }
     std::cout << "Loop finished" << std::endl;
     

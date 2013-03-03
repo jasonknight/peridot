@@ -70,103 +70,7 @@ namespace Lexer {
     };
     /* Pre-Made Dictionaries */
     #include "_dictionaries.hpp" 
-    /**
-     * A TokenType is a primitive, like Numerical, Word, Punctuation, Operator, Symbol,
-     * and different types of Brackets and Parentheses. */
-    enum TokenType {
-        UNKNOWN,
-        NUMERICAL,
-        WORD, // Here we have general lexical unit types for parsing natural language.
-        VERB,
-        ADVERB,
-        PREPOSITION,
-        CONJUNCTION,
-        NOUN,
-        ADJECTIVE,
-        PARTICLE,
-        ARTICLE,
-        PRONOUN,
-        QUOTE,
-        SQUOTE,
-        PUNCTUATION,
-        OPERATOR,
-        PAREN,
-        BRACKET,
-        BRACE,
-        KEYWORD, /* After this point, we have more specialized types, like KMODULE. K for Keyword*/
-        KVARDECL,
-        KFALSE,
-        KTRUE,
-        KNIL,
-        KNULL,
-        KCLASS,
-        KMODULE,
-        KFOR,
-        KWHILE,
-        KUNTIL,
-        KIF,
-        KTHEN,
-        KELIF,
-        KELSE,
-        KEND,
-        KDEFINE,
-        KALIAS,
-        KBEGIN,
-        KDO,
-        KENSURE,
-        KTHROW,
-        KCATCH,
-        KRESCUE,
-        KRETRY,
-        KREDO,
-        KTHIS,
-        KSUPER,
-        KUNLESS,
-        KWHEN,
-        KWITH,
-        KSWITCH,
-        KCASE,
-        KBREAK,
-        KNEXT,
-        KCONTINUE,
-        KYIELD,
-        KAND,
-        KOR,
-        KNOT,
-        KIN,
-        KEXPONENT, //like 2**2
-        KRETURN,
-        KMETHOD, // Different from function if we actually make a distinction
-        KFUNCTION, 
-        KLAMBDA,
-        KNUMERIC, // Begin type keywords
-        KSHORT,
-        KINT,
-        KLONG,
-        KBOOL,
-        KFLOAT,
-        KDOUBLE,
-        KSTRING,
-        KCHAR,
-        KWSTRING,                                    
-        VINSTANCE, // V means Variable, i.e. user space variable.
-        VGLOBAL,
-        VCLASS,
-        VSYM,
-        VFUNCTION,
-        VNUMERIC,
-        VSHORT,
-        VINT,
-        VLONG,
-        VBOOL,
-        VFLOAT,
-        VDOUBLE,
-        VSTRING,
-        VSSTRING, // Single Quoted String
-        VCHAR,
-        VWSTRING
-    };
-
+    
     /**
      * Not sure what to do with these...it's actually faster without
      * caching if you write your tiggertons cleverly...
@@ -185,61 +89,6 @@ namespace Lexer {
         switch(t) {
            #include "_token_exception_to_msg.hpp"
         }
-    }
-    /**
-     * Simply inserts an ALLCAPS name representation of the TokenType into the PeridotString passed in.
-     * DO NOT MANUALLY EDIT THIS METHOD.  Edit the partial that will be included.
-     * #ruby create_token_type_to_name.rb
-     * */
-     inline void TokenTypeToName(TokenType t,PeridotString& name) {
-            switch(t) {
-                /* TOKENTYPE CASES */
-                // provided by a partial
-                #include "_token_type_to_name.hpp"	
-                /* END */
-#ifndef PERIDOT_WSTRING
-                default:
-                    name = "UNKOWNUNKNOWN";
-                    break;
-#else       
-                default:
-                    name = L"UNKOWNUNKNOWN";
-                    break;
-#endif
-            }
-     }
-     /**
-     * Tokens are represented as a chain with previous and next pointing to their siblings
-     * so that it should be possible to navigate forward and backward in the chain.
-     * We want to populate the struct with relevant pieces of information so that the
-     * parser can ultimately decide what it means in context.
-     * */
-    struct Token {
-      PeridotChar                          start;
-      PeridotChar                          end;
-      PeridotChar                          terminated_by; // This will often be a ASCII::SP or perhaps a ;
-                                                   // that can help us predict what to do. It may be
-                                                   // a . so that we know that this is probably an
-                                                   // object and the next WORD will be a symbol that
-                                                   // needs to be sent to the object
-      int                           start_column;
-      int                           line_number;
-      TokenType                     type;
-      PeridotString                   text;
-    };
-
-     /**
-     * We need to be able to sensibly initialize the data structure to avoid forgetting stuff
-     * */
-    void InitializeToken(Token * t) {
-        Utils::Nil(t);
-        t->start = '\0';
-        t->end = '\0';
-        t->terminated_by = '\0';
-        t->start_column = 0;
-        t->line_number = 0;
-        t->type = UNKNOWN;
-        t->text = "";
     }
     /**
      * TokenMonsterDictionary is a struct that contains a list of accepted characters for this
@@ -296,12 +145,12 @@ namespace Lexer {
          * validator requires a function, probably a lambda. See the LexerTest.cpp RunTest2 function
          * for an example of using a validator.
          * In this case, you can also have access to the stream used to find the token.*/
-        std::function<bool (T&, Token *)> validator; // order is always const, input, output
+        std::function<bool (T&, Token* )> validator; // order is always const, input, output
     };
     
     template <class T>
-    void InitializeDictionary(TokenMonsterDictionary<T> * dict) {
-        Utils::Nil(dict);
+    void InitializeDictionary(TokenMonsterDictionary<T> *dict) {
+        Utils::Nil(dict,"InitializeDictionary(dict)");
         dict->tigger = true;
         dict->name = "";
         dict->type = UNKNOWN;
@@ -319,8 +168,8 @@ namespace Lexer {
      * name must be a "" string, or an PeridotString
      * */
     template <class T,class S>
-    void GetPreFabDictionary(const S &name, TokenMonsterDictionary<T> * dest) {
-        Utils::Nil(dest);
+    void GetPreFabDictionary(const S &name, TokenMonsterDictionary<T> *dest) {
+        Utils::Nil(dest,"GetPreFabDictionary(dest)");
         dest->tigger = true; 
         dest->escape_character = Utils::ASCII::BACKSLASH;
         #include "_prefab_dictionaries.hpp"        
@@ -333,8 +182,8 @@ namespace Lexer {
      * whether or not it violates some high level rule.
      * */
     template <class T>
-    bool TokenMonster (TokenMonsterDictionary<T>& dictionary, T& input_stream, Token* result) {
-        Utils::Nil(result);
+    bool TokenMonster (TokenMonsterDictionary<T>& dictionary, T& input_stream, Peridot::Token *result) {
+        Utils::Nil(result,"TokenMonster(result)");
 #ifdef LEXER_DEBUG
         std::cout << std::endl << "##Beginning TokenMonster with: " << dictionary.name << std::endl;
 #endif
@@ -505,37 +354,6 @@ namespace Lexer {
             return false;
     } // End bool TokenMonster  
     /**
-     * It is important to be able to save the results of a lexing to an easier to parse version of the same
-     * file.
-     *
-     */
-    template <class F> 
-    void WriteToken(F& stream,Token * result) {
-        Utils::Nil(result);
-        std::string h = "Token";
-        stream.write(h.data(),h.size());
-        stream << result->start;
-        stream << result->end;
-        stream << result->terminated_by;
-
-        std::string start_column;
-        Utils::IntToString(result->start_column, start_column);
-        stream.write(start_column.data(),start_column.size()) << 'S';
-        
-        std::string line_number;
-        Utils::IntToString(result->line_number,line_number);
-        stream.write(line_number.data(),line_number.size()) << 'L';
-        
-        std::string token_type;
-        Utils::IntToString(result->type,token_type);
-        stream.write(token_type.data(),token_type.size()) << 'T';
-        
-        std::string length;
-        Utils::IntToString(result->text.size(),length);
-        stream.write(length.data(),length.size()) << 'Z';
-        stream.write(result->text.data(),result->text.size());
-    }
-    /**
      * The Luthor class (get it Lexer::Luthor...i'm so funny) is the main
      * Peridot Lexer that accepts a stream and then parses it, maintaining a 
      * token chain from the root on down.
@@ -543,7 +361,7 @@ namespace Lexer {
     template <class T>
     class Luthor {
         public:
-            Luthor(T& s = 0, bool ignorews = false) : source_(s) {
+            Luthor(T& s, bool ignorews = false) : source_(s) {
                 ignore_whitespace_ = ignorews;
                 line_number_ = 1;
                 white_space_seen_ = 0;
@@ -557,22 +375,22 @@ namespace Lexer {
              * output should be one of the arguments except in the case
              * of getters, which are supposed to return a reference.
              * */
-            inline Luthor SetIgnoreTheseChars(const PeridotString& s) {
+            inline Luthor& SetIgnoreTheseChars(const PeridotString& s) {
                 ignore_these_chars_ = s;
                 return *this;
             }
-            inline PeridotString& GetIgnorTheseChars() {
+            inline std::string& GetIgnorTheseChars() {
                 return ignore_these_chars_;
             }
             inline int GetWhiteSpaceSeen() {
                 return white_space_seen_;
             }
-            inline Luthor AddDictionary(TokenMonsterDictionary<T> * d) {
-                Utils::Nil(d);
+            inline Luthor& AddDictionary(TokenMonsterDictionary<T> *d) {
+                Utils::Nil(d,"Luthor->AddDictionary");
                 dictionaries_.push_back(d);
                 return *this;
             }
-            inline Luthor ConsumeWhitespace() {
+            inline Luthor& ConsumeWhitespace() {
                 PeridotChar c;
                 white_space_seen_ = 0;
                 source_.get(c); // preload the char
@@ -600,8 +418,8 @@ namespace Lexer {
 #endif
                 return *this;
             }
-            bool Next(Token * result) {
-                Utils::Nil(result);
+            bool Next(Peridot::Token * result) {
+                Utils::Nil(result,"Luthor::Next(result)");
                 ConsumeWhitespace();
                 if (source_.good()) {
                     bool found = false;
@@ -637,7 +455,7 @@ namespace Lexer {
             int white_space_seen_;
             /* Otherwise we need to know what chars to ignore*/
             PeridotString ignore_these_chars_;
-            typename std::vector<Lexer::TokenMonsterDictionary<T> *>::iterator dit_;
+            typename std::vector<Lexer::TokenMonsterDictionary<T>*>::iterator dit_;
             std::vector<TokenMonsterDictionary<T>*> dictionaries_;
     };
  

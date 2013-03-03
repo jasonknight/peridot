@@ -1182,3 +1182,55 @@ case TokenType::VWSTRING:
 #endif
 
     
+#ifndef PERIDOT_WSTRING
+case TokenType::VHASH:
+	name = "VHASH";
+	break;
+
+#else
+case TokenType::VHASH:
+	name = L"VHASH";
+	break;
+
+#endif
+
+    
+#ifndef PERIDOT_WSTRING
+case TokenType::VARRAY:
+	name = "VARRAY";
+	break;
+
+#else
+case TokenType::VARRAY:
+	name = L"VARRAY";
+	break;
+
+#endif
+
+    
+#ifndef PERIDOT_WSTRING
+case TokenType::VOBJECT:
+	name = "VOBJECT";
+	break;
+
+#else
+case TokenType::VOBJECT:
+	name = L"VOBJECT";
+	break;
+
+#endif
+
+    
+#ifndef PERIDOT_WSTRING
+case TokenType::VLAMBDA:
+	name = "VLAMBDA";
+	break;
+
+#else
+case TokenType::VLAMBDA:
+	name = L"VLAMBDA";
+	break;
+
+#endif
+
+    
